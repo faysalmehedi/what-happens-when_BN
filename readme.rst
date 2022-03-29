@@ -2,7 +2,7 @@
 ====================
 
 এই রিপোজারিটা মূলত বিখ্যাত একটি পুরনো প্রশ্নের উত্তরের খোঁজে, "কি ঘটে যখন আপনি ব্রাউজারে গুগল.কম লিখে ঠাস করে এন্টার চাপ দেন?"। 
-পুরো ব্যাপারটা `এই রিপো`_ (Main Repo) থেকে অনুবাদ করা, তবে আমি চেষ্টা করেছি একেবারে লাইন বাই লাইন কপি না করে নিজের ভাষায় লিখার
+পুরো ব্যাপারটা `এই রিপো`_ থেকে অনুবাদ করা, তবে আমি চেষ্টা করেছি একেবারে লাইন বাই লাইন কপি না করে নিজের ভাষায় লিখার
  জন্য। সুতরাং প্রচুর ভুল ত্রুটি থাকবেই এটা স্বাভাবিক, খুঁজে পেলে PR পাঠান।
 
 চলুন শুরু করা যাক...
@@ -579,6 +579,6 @@ page rendering and painting.
 .. _`OSI Model`: https://en.wikipedia.org/wiki/OSI_model
 .. _`Spanish`: https://github.com/gonzaleztroyano/what-happens-when-ES
 
-.. _`Main Repo`: https://github.com/alex/what-happens-when
+.. _`এই রিপো`: https://github.com/alex/what-happens-when
 .. _`Punycode`: https://en.wikipedia.org/wiki/Punycode
 
