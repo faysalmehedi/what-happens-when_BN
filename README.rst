@@ -53,22 +53,22 @@ URL থেকে Parse করা
 
 যখন কোন প্রোটোকল বা ভ্যালিড ডোমেইন নাম ব্রাউজারকে দেওয়া হয় না, তখন ব্রাউজার সেই এড্রেস বক্সে দেওয়া টেক্সটকে ব্রাউজারের ডিফল্ট ওয়েব সার্চ ইঞ্জিনে সার্চ করে। অনেক সময় দেখা যায়, URL এ কোন স্পেশাল টেক্সটের অংশ যুক্ত হয়েছে যেটায় সার্চ ইঞ্জিনকে বলা হয় যে এটি স্পেসিফিক ব্রাউজারের ইউজার বার থেকে যাচ্ছে/আসছে।
 
-non-ASCII Unicode characters কে হোস্টনেমে রূপান্তর করাঃ
+non-ASCII Unicode characters কে হোস্টনেমে রূপান্তর করা
 -----------------------------------------------
 
 * ব্রাউজার হোস্টনেম চেক করে এই অক্ষরগুলোর জন্য যেগুলো ( ``a-z``, ``A-Z``, ``0-9``, ``-``, or ``..`` ) এর মধ্যে নেই।
 * যেহেতু আমরা ধরে নিয়েছি আমাদের হোস্টনেম "google.com" সেহেতু এইখানে এমন কিছু নেই, কিন্তু যদি থাকতো তবে ব্রাউজার হোস্টনেম অংশে `Punycode`_ encoding ব্যবহার করতো।
 
 
-HSTS লিস্ট চেক করাঃ 
+HSTS লিস্ট চেক করা
 ---------------
 * একটা রিকোয়েস্ট করার সময় ব্রাউজার তার নিজস্ব "preloaded HSTS (HTTP Strict Transport Security)" লিস্ট চেক করে। এটি হচ্ছে ওয়েবসাইটের একটি লিস্ট যেগুলো শুধুমাত্র HTTPS দ্বারা যোগাযোগ করার জন্য বলা হয়। 
 
 * যদি ওয়েবসাইটটি এই লিস্টে থেকে থাকে, তাহলে ব্রাউজার HTTP এর বদলে শুধুমাত্র HTTPS দ্বারা রিকোয়েস্ট পাঠায়। আর যদি লিস্টে না থাকে তাহলে ইনিশিয়াল রিকোয়েস্টটা HTTP দ্বারা পাঠানো হয়। নোটঃ একটি ওয়েবসাইট HSTS পলিসি HSTS লিস্টে না থাকলেও ব্যবহার করতে পারে। এই ক্ষেত্রে ইউজার প্রথম রিকোয়েস্টটা HTTP দ্বারা পাঠালে সেটা একটা রেসপন্স করে যে শুধুমাত্র HTTPS রিকোয়েস্ট পাঠানোর জন্য। এইখানে একটা আশঙ্কা এই যে, এই প্রথম HTTP রিকোয়েস্টও কিন্তু ইউজারকে "downgrade attack" এর সম্মুখীন করতে পারে। এই জন্য বর্তমানে সকল মর্ডাণ ওয়েব ব্রাউজারেই HSTS লিস্ট অবশ্যই সংযুক্ত থাকে।  
 
 
-DNS খোঁজাখুঁজিঃ 
--------------------- 
+DNS খোঁজাখুঁজি
+-----------
 
 * ব্রাউজার চেক করে যদি রিকোয়েস্ট করা ডোমেইনটা cache-এ আছে কিনা? (ক্রোম ব্রাউজারে DNS cache দেখার জন্য এই খানে যান `chrome://net-internals/#dns <chrome://net-internals/#dns>`_) 
 
@@ -80,28 +80,18 @@ DNS খোঁজাখুঁজিঃ
 * DNS সার্ভার যদি একই সাবনেটে না থাকে, অন্য একটা সাবনেটে থাকে তাহলে নেটওয়ার্ক লাইব্রেরী নিচের ``ARP process`` ফলো করে ডিফল্ট গেটওয়ে আইপির সাথে।   
 
 
-
 ARP process
 -----------
 
-In order to send an ARP (Address Resolution Protocol) broadcast the network
-stack library needs the target IP address to lookup. It also needs to know the
-MAC address of the interface it will use to send out the ARP broadcast.
+ARP (Address Resolution Protocol)  ব্রডকাস্ট মেসেজ পাঠানোর জন্য নেটওয়ার্ক লাইব্রেরীর আইপি এড্রেস লাগে লুকআপের জন্য। এছাড়া যে ইন্টারফেসের মাধ্যেমে ARP পাঠানো হবে সেই ইন্টারফেসের ম্যাক এড্রেসেরও (MAC-Media Acess Control) প্রয়োজন হয়।  
 
-The ARP cache is first checked for an ARP entry for our target IP. If it is in
-the cache, the library function returns the result: Target IP = MAC.
+ARP cache তে প্রথমে খোঁজা হয় ARP এন্ট্রি আছে কিনা টার্গেটেড আইপির। যদি cache এ পাওয়া যায়, তাহলে লাইব্রেরী ফাংশন একটা রেজাল্ট ফেরত পাঠায় Target IP = MAC. 
 
-If the entry is not in the ARP cache:
+আর যদি ARP cache এ পাওয়া না যায়ঃ 
 
-* The route table is looked up, to see if the Target IP address is on any of
-  the subnets on the local route table. If it is, the library uses the
-  interface associated with that subnet. If it is not, the library uses the
-  interface that has the subnet of our default gateway.
-
-* The MAC address of the selected network interface is looked up.
-
-* The network library sends a Layer 2 (data link layer of the `OSI model`_)
-  ARP request:
+* রাউট টেবিলে খোঁজ করে দেখা হয় যদি সেই টার্গেটেড আইপি এড্রেস লোকাল রাউট টেবিলের অন্য কোন সাবনেটের সাথে মিলে কিনা। যদি মিলে যায়, লাইব্রেরী সেই সাবনেটের সাথে যুক্ত ইন্টারফেস ব্যবহার করে। আর যদি না মিলে, লাইব্রেরী ডিফল্ট গেটওয়ের ইন্টারফেস করে। 
+* এরপর যে ইন্টারফেস সিলেক্ট করা হয়েছে সেই ইন্টারফেসের MAC এড্রেস খোঁজা হয়। 
+* তারপর নেটওয়ার্ক লাইব্রেরী একটি  Layer 2 (data link layer of the `OSI model`_) ARP request সেন্ড করে।
 
 ``ARP Request``::
 
@@ -110,31 +100,18 @@ If the entry is not in the ARP cache:
     Target MAC: FF:FF:FF:FF:FF:FF (Broadcast)
     Target IP: target.ip.goes.here
 
-Depending on what type of hardware is between the computer and the router:
+কি রকম হার্ডওয়্যার কম্পিউটার ও রাউটারের মাঝে রয়েছে তার উপর নির্ভর করেঃ 
 
-Directly connected:
+সরাসরি যুক্তঃ  
+* কম্পিউটার যদি সরাসরি রাউটারের সাথে যুক্ত থাকে তাহলে রাউটার রেসপন্স করে একটি ARP রিপ্লাই পাঠাবে(নিচে দেখুন)।  
 
-* If the computer is directly connected to the router the router response
-  with an ``ARP Reply`` (see below)
+হাবের(Hub) মাধ্যেমে যুক্তঃ 
+* যদি কম্পিউটার কোন হাবের সাথে যুক্ত থাকে তবে হাব ARP request ব্রডকাস্ট করবে অন্য সব পোর্টে(port) -এ। যদি রাউটার সেই একই তারে(wire) যুক্ত থাকে, তাহলে সেটি রেসপন্স করে একটি ``ARP Reply`` পাঠাবে(নিচে দেখুন)।  
 
-Hub:
-
-* If the computer is connected to a hub, the hub will broadcast the ARP
-  request out of all other ports. If the router is connected on the same "wire",
-  it will respond with an ``ARP Reply`` (see below).
-
-Switch:
-
-* If the computer is connected to a switch, the switch will check its local
-  CAM/MAC table to see which port has the MAC address we are looking for. If
-  the switch has no entry for the MAC address it will rebroadcast the ARP
-  request to all other ports.
-
-* If the switch has an entry in the MAC/CAM table it will send the ARP request
-  to the port that has the MAC address we are looking for.
-
-* If the router is on the same "wire", it will respond with an ``ARP Reply``
-  (see below)
+সুইচের(switch) মাধ্যেমে যুক্তঃ 
+* যদি কম্পিউটার কোন সুইচের মাধ্যমে যুক্ত থাকে, তাহলে সুইচ তার নিজস্ব CAM/MAC table খুঁজে দেখবে কোন পোর্টে সেই ম্যাক এড্রেস রয়েছে যেটা আমরা খুঁজছি। যদি সুইচে সেই ম্যাক এড্রেসের খোজ না পাওয়া যায় তবে এটি পুনরায় একটা ARP রিকোয়েস্ট পাঠাবে অন্য সকল পোর্টে। 
+* যদি সুইচের MAC/CAM table এ পাওয়া যায়, তবে সেই পোর্টকে চিহ্নিত করে সে ARP রিকোয়েস্ট পাঠাবে। 
+* যদি রাউটার সেই একই তারে(wire) যুক্ত থাকে, তাহলে সেটি রেসপন্স করে একটি ``ARP Reply`` পাঠাবে(নিচে দেখুন)।
 
 ``ARP Reply``::
 
@@ -143,85 +120,53 @@ Switch:
     Target MAC: interface:mac:address:here
     Target IP: interface.ip.goes.here
 
-Now that the network library has the IP address of either our DNS server or
-the default gateway it can resume its DNS process:
+এখন যেহেতু নেটওয়ার্ক লাইব্রেরীর কাছে DNS সার্ভার কিংবা ডিফল্ট গেটওয়ের আইপি এড্রেস রয়েছে, সে এখন DNS প্রসেস শুরু করতে পারেঃ 
 
-* The DNS client establishes a socket to UDP port 53 on the DNS server,
-  using a source port above 1023.
-* If the response size is too large, TCP will be used instead.
-* If the local/ISP DNS server does not have it, then a recursive search is
-  requested and that flows up the list of DNS servers until the SOA is reached,
-  and if found an answer is returned.
+* DNS ক্লায়েন্ট একটি সকেট এস্টাবলিশ করে DNS সার্ভারের UDP পোর্ট 53 তে, সোর্স পোর্ট 1023 ব্যবহার করে। 
+* যদি রেসপন্সের সাইজটা বড় হয়ে যায় সেক্ষেত্রে TCP প্রটোকল ব্যবহার হয় UDP এর পরিবর্তে। 
+* যদি লোকাল/আইএসপি DNS সার্ভারের কাছে ইনফরমেশন না পায়, তাহলে একটি রিকার্সিভ সার্চ রিকোয়েস্ট করা হয় এবং সেটি লিস্টে থাকা অন্য সকল DNS সার্ভারে পৌঁছায় যতক্ষণ না  SOA(start of authority) record না পাওয়া যায়, এবং যখন পাওয়া যায় তখন উত্তর রিটার্ন করে।
 
 Opening of a socket
 -------------------
-Once the browser receives the IP address of the destination server, it takes
-that and the given port number from the URL (the HTTP protocol defaults to port
-80, and HTTPS to port 443), and makes a call to the system library function
-named ``socket`` and requests a TCP socket stream - ``AF_INET/AF_INET6`` and
-``SOCK_STREAM``.
 
-* This request is first passed to the Transport Layer where a TCP segment is
-  crafted. The destination port is added to the header, and a source port is
-  chosen from within the kernel's dynamic port range (ip_local_port_range in
-  Linux).
-* This segment is sent to the Network Layer, which wraps an additional IP
-  header. The IP address of the destination server as well as that of the
-  current machine is inserted to form a packet.
-* The packet next arrives at the Link Layer. A frame header is added that
-  includes the MAC address of the machine's NIC as well as the MAC address of
-  the gateway (local router). As before, if the kernel does not know the MAC
-  address of the gateway, it must broadcast an ARP query to find it.
+যখন ব্রাউজার ডেসটিনেশন সার্ভারের আইপি এড্রেস পেয়ে যায়, ব্রাউজার সেই আইপি ও URL এর সাথে থাকা পোর্ট নাম্বার  (the HTTP protocol defaults to port 80, and HTTPS to port 443) নেয় এবং ``socket`` নামে একটি সিস্টেম লাইব্রেরী ফাংশন কল করে এবং রিকোয়েস্ট পাঠায় TCP socket stream - ``AF_INET/AF_INET6`` and ``SOCK_STREAM`` -এ। 
 
-At this point the packet is ready to be transmitted through either:
+* রিকোয়েস্টটি প্রথমে ট্রান্সপোর্ট লেয়ারে যায় যেখানে একটি TCP সেগমেন্ট তৈরি হয়। ডেস্টিনেশন পোর্ট হেডারের সাথে যুক্ত করা হয় এবং একটি সোর্স পোর্ট নেওয়া হয় কার্নেলের ডায়নামিক পোর্ট রেঞ্জ থেকে  (ip_local_port_range in Linux). 
+* সেগমেন্টটি এরপর নেটওয়ার্ক লেয়ারে পাঠানো হয়, সেখানে গিয়ে আইপি হেডার যুক্ত হয়। সেই আইপি হেডারে ডেস্টিনেশন সার্ভারের আইপি এবং সোর্স আইপি হিসেবে ডিভাইসের আইপি যুক্ত করা হয় এবং প্যাকেট তৈরি হয়। 
+* এরপর প্যাকেটটি লিংক লেয়ারে পৌঁছায়। এইবার একটি ফ্রেম হেডার যেখানে ডিভাইসের NIC কার্ডের MAC এড্রেস যুক্ত করা হয় সেই সাথে লোকাল রাউটারের বা গেটওয়ের MAC যুক্ত করা হয়। পূর্বের মত, যদি কার্নেল যদি গেটওয়ের MAC এড্রেস না থাকে তাহলে ARP কুয়েরি করতে ব্রডকাস্ট করার মাধ্যেমে। 
 
+এই পয়েন্টে প্যাকেট প্রস্তুত নিচের যেকোন মাধ্যেমে ট্রান্সমিট হওয়ার জন্যঃ 
 * `Ethernet`_
 * `WiFi`_
 * `Cellular data network`_
 
-For most home or small business Internet connections the packet will pass from
-your computer, possibly through a local network, and then through a modem
-(MOdulator/DEModulator) which converts digital 1's and 0's into an analog
-signal suitable for transmission over telephone, cable, or wireless telephony
-connections. On the other end of the connection is another modem which converts
-the analog signal back into digital data to be processed by the next `network
-node`_ where the from and to addresses would be analyzed further.
+বেশিরভাগ বাড়ী বা ছোট ব্যবসা প্রতিষ্ঠানের ইন্টারনেট কানেকশনের ক্ষেত্রে, প্যাকেটটি নিজস্ব কম্পিউটার, এরপর খুব সম্ভবত লোকাল নেটওয়ার্ক এবং এরপর মডেম (MOdulator/DEModulator) এর মধ্যে দিয়ে যেটি মূলত ডিজিটাল  1's and 0's কে রূপান্তর করে এনালগ সিগনালে যাতে করে টেলিফোন, ক্যাবল, বা ওয়্যারলেস কানেকশনের মধ্যে দিয়ে যেতে পারে। অন্যদিকে অন্য প্রান্তে থাকা মডেম ও একইভাবে এনালগ সিগনালটিকে পুনরায় ডিজিটাল ডাটায় রূপান্তর করে পরবর্তী নেটওয়ার্কে নোডে(`network node`_) যেখানে প্যাকেটে থাকা "From" এবং "to" এড্রেসগুলো এনাইসিস করা হয়। 
 
-Most larger businesses and some newer residential connections will have fiber
-or direct Ethernet connections in which case the data remains digital and
-is passed directly to the next `network node`_ for processing.
+বেশিরভাগ বড় ব্যবসা প্রতিষ্ঠান এবং অনেক বাসাবাড়িতেও এখন ফাইবার অপটিক বা সরাসরি ইথারনেট কানেকশন রয়েছে, সেসব ক্ষেত্রে ডাটা রূপান্তর করতে হয় না, ডিজিটাল ডাটাই সরাসরি পরবর্তী নেটওয়ার্কের নোডের কাছে পাঠিয়ে দেওয়া হয় প্রসেসিং করার জন্য।   
 
-Eventually, the packet will reach the router managing the local subnet. From
-there, it will continue to travel to the autonomous system's (AS) border
-routers, other ASes, and finally to the destination server. Each router along
-the way extracts the destination address from the IP header and routes it to
-the appropriate next hop. The time to live (TTL) field in the IP header is
-decremented by one for each router that passes. The packet will be dropped if
-the TTL field reaches zero or if the current router has no space in its queue
-(perhaps due to network congestion).
+অবশেষে প্যাকেটটি রাউটারে পৌঁছায় যেটা লোকাল সাবনেটকে ম্যানেজ করে। সেখান থেকে এটা তার ট্রাভেলিং অব্যাহত রাখে autonomous system's (AS) border রাউটারে, অন্যান্য AS(autonomous system) এ, এবং সর্বশেষে ডেস্টিনেশন সার্ভারে। এই ট্রাভেলিংয়ের সময় প্রতিটা রাউটার আইপি হেডার থেকে ডেস্টিনেশন এড্রেস দেখে এবং  যথাযথ পরবর্তী গন্তব্য(Next hop) এর কাছে পাঠায়। আইপি হেডারে থাকা time to live (TTL) ফিল্ড প্রতিবার রাউটার অতিক্রম করার সময়ে এর মান "এক" করে কমিয়ে নেয়। যদি TTL ফিল্ডটি শূন্য হয়ে যায় অথবা রাউটারের queue তে যদি কোন জায়গা খালি না (এমন হতে পারে network congestion এর জন্য) তাহলে প্যাকেটটি ড্রপড হয়ে যাবে। 
 
-This send and receive happens multiple times following the TCP connection flow:
+এই "send and receive" প্রসেস কয়েকবার ঘটে নিচের দেওয়া TCP কানেকশন ফ্লো অনুযায়ীঃ 
 
-* Client chooses an initial sequence number (ISN) and sends the packet to the
-  server with the SYN bit set to indicate it is setting the ISN
-* Server receives SYN and if it's in an agreeable mood:
-   * Server chooses its own initial sequence number
-   * Server sets SYN to indicate it is choosing its ISN
-   * Server copies the (client ISN +1) to its ACK field and adds the ACK flag
-     to indicate it is acknowledging receipt of the first packet
-* Client acknowledges the connection by sending a packet:
-   * Increases its own sequence number
-   * Increases the receiver acknowledgment number
-   * Sets ACK field
-* Data is transferred as follows:
-   * As one side sends N data bytes, it increases its SEQ by that number
-   * When the other side acknowledges receipt of that packet (or a string of
-     packets), it sends an ACK packet with the ACK value equal to the last
-     received sequence from the other
-* To close the connection:
-   * The closer sends a FIN packet
-   * The other sides ACKs the FIN packet and sends its own FIN
-   * The closer acknowledges the other side's FIN with an ACK
+* ক্লায়েন্ট একটি initial sequence number (ISN) নাম্বার নেয় এবং প্যাকেটটিকে সার্ভারে পাঠায় SYN bit সেট করে বুঝানোর জন্য। 
+
+* সার্ভার সেই SYN bit রিসিভ করে এবং যদি সে এই রিকোয়েস্টে সম্মত হতে চায়ঃ 
+   * সার্ভার তার নিজের ISN বাছাই করে 
+   * সার্ভার SYN সেট করে এটা বুঝানোর জন্য সে নিজের ISN বাছাই করেছে। 
+   * সার্ভার (ক্লায়েন্ট SYN + 1) কপি করে ACK ফিল্ডে এবং ACK ফ্ল্যাগ যোগ করে এটা নির্দেশ করে এটা হচ্ছে একটা  acknowledging receipt প্রথম প্যাকেটটার জন্য। 
+
+* ক্লায়েন্ট একনলেজ করে কানেকশনের ব্যাপারে আরও একটি প্যাকেট পাঠানোর মাধ্যেমেঃ 
+   * নিজের sequence নাম্বার বাড়িয়ে দেয় 
+   * রিসিভারের acknowledgment নাম্বারও বাড়িয়ে দেয়  
+   * ACK ফিল্ডকে সেট করে দেয় 
+* ডাটা ট্রান্সফার হয় যেভাবেঃ 
+   * যেহেতু একটা সাইড N বাইট ডাটা পাঠায়, এটা তার SEQ বা sequence নাম্বারও সেই বাইট অনুযায়ী বাড়িয়ে দেয়। 
+   * যখন অপর সাইড প্যাকেট প্রাপ্তির ব্যাপার acknowledge করে, তখন সেটি একটা ACK প্যাকেট পাঠায় ACK ভ্যালু সেট করে যেটি সর্বশেষ পাওয়া অন্য সাইডের sequence নাম্বারের সমান 
+
+* কানেকশন ক্লোজ করার জন্যঃ 
+   * "closer" একটি FIN প্যাকেট পাঠায় 
+   * অন্য সাইড FIN প্যাকেটটি  acknowledge করে, এবং নিজের FIN পাঠায় 
+   * "closer" সেই FIN প্যাকেটটি acknowledge করে একটি ACK দ্বারা    
 
 TLS handshake
 -------------
@@ -547,10 +492,6 @@ page rendering and painting.
 
 .. _`Creative Commons Zero`: https://creativecommons.org/publicdomain/zero/1.0/
 .. _`"CSS lexical and syntax grammar"`: http://www.w3.org/TR/CSS2/grammar.html
-.. _`Punycode`: https://en.wikipedia.org/wiki/Punycode
-.. _`Ethernet`: http://en.wikipedia.org/wiki/IEEE_802.3
-.. _`WiFi`: https://en.wikipedia.org/wiki/IEEE_802.11
-.. _`Cellular data network`: https://en.wikipedia.org/wiki/Cellular_data_communication_protocol
 .. _`analog-to-digital converter`: https://en.wikipedia.org/wiki/Analog-to-digital_converter
 .. _`network node`: https://en.wikipedia.org/wiki/Computer_network#Network_nodes
 .. _`TCP congestion control`: https://en.wikipedia.org/wiki/TCP_congestion_control
@@ -563,10 +504,13 @@ page rendering and painting.
 .. _`한국어`: https://github.com/SantonyChoi/what-happens-when-KR
 .. _`日本語`: https://github.com/tettttsuo/what-happens-when-JA
 .. _`downgrade attack`: http://en.wikipedia.org/wiki/SSL_stripping
-.. _`OSI Model`: https://en.wikipedia.org/wiki/OSI_model
+
 .. _`Spanish`: https://github.com/gonzaleztroyano/what-happens-when-ES
 
 .. _`এই রিপো`: https://github.com/alex/what-happens-when
 .. _`Punycode`: https://en.wikipedia.org/wiki/Punycode
 .. _`ফাংশনটা OS অনুযায়ী আলাদাও হতে পারে` : https://en.wikipedia.org/wiki/Hosts_%28file%29#Location_in_the_file_system
-
+.. _`OSI Model`: https://en.wikipedia.org/wiki/OSI_model
+.. _`Ethernet`: http://en.wikipedia.org/wiki/IEEE_802.3
+.. _`WiFi`: https://en.wikipedia.org/wiki/IEEE_802.11
+.. _`Cellular data network`: https://en.wikipedia.org/wiki/Cellular_data_communication_protocol
