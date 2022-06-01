@@ -275,160 +275,94 @@ HTTPD (HTTP Daemon) সার্ভার রিকোয়েস্ট এবং 
 * Rendering - Construct DOM Tree → Render Tree → Layout of Render Tree →
   Painting the render tree 
 
-Browser
+ব্রাউজার 
 -------
+ব্রাউজারের মূল ফাংশালিটি হচ্ছে যে সকল ওয়েব রিসোর্স আপনি দেখতে চান সেগুলোকে ব্রাউজারের দ্বারা রিকোয়েস্ট করলে সেইসকল রিসোর্সকে সার্ভার থেকে নিয়ে আসা এবং ব্রাউজারের window তে সেগুলোকে প্রদর্শন করা। সাধারণত সেই রিসোর্সগুলো HTML ডকুমেন্ট হয়ে থাকে, তবে সেগুলো পিডিএফ, ইমেজ কিংবা অন্য ধরনের কন্টেন্টও হতে পারে। সেই রিসোর্সের লোকেশন নির্নয় করা হয় ইউজারের রিকোয়েস্টে ব্যবহার করা URI (Uniform Resource Identifier) থেকে। 
 
-The browser's functionality is to present the web resource you choose, by
-requesting it from the server and displaying it in the browser window.
-The resource is usually an HTML document, but may also be a PDF,
-image, or some other type of content. The location of the resource is
-specified by the user using a URI (Uniform Resource Identifier).
+যে পদ্ধতিতে ওয়েব ব্রাউজার HTML ফাইলগুলোকে ইন্টারপ্রিট ও প্রদর্শন করে সেটি সাধারণত HTML and CSS specifications অনুযায়ী হয়ে থাকে। এই স্পেশিকেশনগুলো মেইনটেইন করে W3C (World Wide Web Consortium) নামে একটি অর্গানাইজেশন যারা ওয়েবের জন্য স্ট্যান্ডার্ড ঠিক করার জন্য প্রতিষ্টিত হয়েছে। 
 
-The way the browser interprets and displays HTML files is specified
-in the HTML and CSS specifications. These specifications are maintained
-by the W3C (World Wide Web Consortium) organization, which is the
-standards organization for the web.
+ব্রাউজারের ইউজার ইন্টারফেসগুলোর অনেকগুলো হচ্ছেঃ 
+* URI নেওয়ার জন্য একটি এড্রেস বার 
+* ব্যাক এবং ফরোয়ার্ড বাটন 
+* বুকমার্কিং অপশন 
+* রিফ্রেশ বাটন পেজ পুনরায় লোড করার জন্য ও স্টপ বাটন পেজের লোডিং বন্ধ করার জন্য  
+* হোম বাটন যেটা আপনাকে ব্রাউজারের হোম পেজে নিয়ে যাওয়ার জন্য 
 
-Browser user interfaces have a lot in common with each other. Among the
-common user interface elements are:
+**ব্রাউজারের High-Level Structure** 
 
-* An address bar for inserting a URI
-* Back and forward buttons
-* Bookmarking options
-* Refresh and stop buttons for refreshing or stopping the loading of
-  current documents
-* Home button that takes you to your home page
+ব্রাউজারের মূল উপাদানগুলো(components) হচ্ছেঃ 
 
-**Browser High-Level Structure**
-
-The components of the browsers are:
-
-* **User interface:** The user interface includes the address bar,
-  back/forward button, bookmarking menu, etc. Every part of the browser
-  display except the window where you see the requested page.
-* **Browser engine:** The browser engine marshals actions between the UI
-  and the rendering engine.
-* **Rendering engine:** The rendering engine is responsible for displaying
-  requested content. For example if the requested content is HTML, the
-  rendering engine parses HTML and CSS, and displays the parsed content on
-  the screen.
-* **Networking:** The networking handles network calls such as HTTP requests,
-  using different implementations for different platforms behind a
-  platform-independent interface.
-* **UI backend:** The UI backend is used for drawing basic widgets like combo
-  boxes and windows. This backend exposes a generic interface that is not
-  platform-specific.
-  Underneath it uses operating system user interface methods.
-* **JavaScript engine:** The JavaScript engine is used to parse and
-  execute JavaScript code.
-* **Data storage:** The data storage is a persistence layer. The browser may
-  need to save all sorts of data locally, such as cookies. Browsers also
-  support storage mechanisms such as localStorage, IndexedDB, WebSQL and
-  FileSystem.
+* **User interface:** ইউজার ইন্টারফেসে বিভিন্ন অপশন থাকে যেমন, the address bar,
+  back/forward button, bookmarking menu ইত্যাদি। ব্রাউজারের প্রতিটা পার্টই দেখা যায় একমাত্র উইন্ডো ছাড়া যেখানে আপনার রিকোয়েস্টেড পেজ প্রদর্শিত থাকে। 
+* **Browser engine:** ব্রাউজার ইঞ্জিন সাধারণত UI এবং rendering engine এর মধ্যে কাজ করে থাকে। 
+* **Rendering engine:** rendering engine এর কাজ হচ্ছে রিকোয়েস্টকৃত কন্টেন্ট প্রদর্শন করা। যেমন, যদি HTML কন্টেন্ট রিকোয়েস্ট করা হয় তবে rendering engine HTML এবং CSS parse করে এবং স্ক্রীনে পার্স করা কন্টেন্টগুলো দেখায়। 
+* **Networking:** networking বিভিন্ন নেটওয়ার্কিং কলগুলোকে হ্যান্ডেল করে যেমন HTTP রিকোয়েস্ট, বিভিন্ন প্ল্যাটফর্মের অনুযায়ী বিভিন্ন ধরনের ইমপ্লিমেন্টশন করে থাকে যার পিছনে platform-independent ইন্টারফেইসের ভূমিকা থাকে। 
+* **UI backend:** UI backend ব্যবহার করা হয় বিভিন্ন widgets যেমন বক্স এবং উইন্ডো আঁকার জন্য। এই backend একটি জেনেরিক ইন্টারফেস এক্সপোজ করে যেটি প্ল্যাটফর্ম-স্পেসিফিক হয় না। এর ভিতরে মূলত এটি ব্যবহার করে অপারেটিং সিস্টেমের ইউজার ইন্টারফেস মেথড। 
+* **JavaScript engine:** জাভাস্ক্রিপ্ট ইঞ্জিন ব্যবহার করা হয় জাভাস্ক্রীপ্ট কোড parse এবং execute করার জন্য। 
+* **Data storage:** ডাটা স্টোরেজ হচ্ছে স্থির(persistence) লেয়ার। ব্রাউজারের হয়তো অনেক ডাটা লোকালি সেভ করে রাখার প্রয়োজন পড়ে, যেমন cookies. ব্রাউজার আরও সাপোর্ট করে থাকে বিভিন্ন স্টোরেজ মেকানিজম যেমন  localStorage, IndexedDB, WebSQL and FileSystem.
 
 HTML parsing
-------------
+------------ 
+rendering engine নেটওয়ার্কিং লেয়ার থেকে রিকোয়েস্টেড ডকুমেন্টের কন্টেন্ট নেওয়া শুরু করে। এগুলো সাধারণত 8kB খন্ড(8kB chunk )  আকারে নেওয়া হয়। HTML parser এর মূল কাজ হচ্ছে HTML মার্কআপ কে একটি parse tree তে রূপান্তর করা। এই parse tree টা হচ্ছে ``DOM element and attribute nodes`` এর tree. DOM হচ্ছে  Document Object Model এর সংক্ষিপ্ত রূপ। এটি হচ্ছে HTML ডকুমেন্টের object এর প্রেজেন্টেশন এবং HTML এলিমেন্টগুলোর বাইরের টুলসের সাথে কাজ করার জন্য ইন্টারফেইস হিসেবে কাজ করে, যেমন জাভাস্ক্রীপ্ট। এই tree এর "root" হচ্ছে "Document" অবজেক্ট। অন্য কোন স্ক্রিপ্টিং এর সাহায্য ছাড়াই DOM হচ্ছে মার্কআপের সাথে  one-to-one relation থাকে। 
 
-The rendering engine starts getting the contents of the requested
-document from the networking layer. This will usually be done in 8kB chunks.
 
-The primary job of the HTML parser is to parse the HTML markup into a parse tree.
+**The parsing algorithm** 
+HTML কে নিয়মিত ব্যবহার করা top-down or bottom-up parsers দিয়ে parse করা যায় না। 
 
-The output tree (the "parse tree") is a tree of DOM element and attribute
-nodes. DOM is short for Document Object Model. It is the object presentation
-of the HTML document and the interface of HTML elements to the outside world
-like JavaScript. The root of the tree is the "Document" object. Prior to
-any manipulation via scripting, the DOM has an almost one-to-one relation to
-the markup.
+কারণগুলি হচ্ছেঃ 
+* The forgiving nature of the language. 
+* বিভিন্ন পরিচিত ইনভ্যালিড HTML এরর এর ক্ষেত্রে ব্রাউজারের সাপোর্ট করার জন্য টলারেন্স নীতি থাকা 
+* পার্সিং প্রসেসে নতুন কিছু করার সুবিধা। অন্যান্য ল্যাংগুয়েজের ক্ষেত্রে সোর্স parsing এর ক্ষেত্রে পরিবর্তন করা যায় না। কিন্তু HTML এ dynamic কোড (such as script elements
+  containing `document.write()` calls) এক্সট্রা টোকেন যোগ করতে পারে, সুতরাং parsing প্রসেস মূল ইনপুটকে পরিবর্তন করতে পারে। 
 
-**The parsing algorithm**
+যেহেতু রেগুলার parsing টেকনিক দ্বারা parse করা সম্ভব হয় না, ব্রাউজার একটি কাস্টমাইজ করা parser ব্যবহার করে HTML parse করার জন্য। HTML5 স্পেসিফিকেশনে এই parsing এলগোরিদম সম্পর্কে বিস্তারিত বলা রয়েছে। 
 
-HTML cannot be parsed using the regular top-down or bottom-up parsers.
-
-The reasons are:
-
-* The forgiving nature of the language.
-* The fact that browsers have traditional error tolerance to support well
-  known cases of invalid HTML.
-* The parsing process is reentrant. For other languages, the source doesn't
-  change during parsing, but in HTML, dynamic code (such as script elements
-  containing `document.write()` calls) can add extra tokens, so the parsing
-  process actually modifies the input.
-
-Unable to use the regular parsing techniques, the browser utilizes a custom
-parser for parsing HTML. The parsing algorithm is described in
-detail by the HTML5 specification.
-
-The algorithm consists of two stages: tokenization and tree construction.
+এই এলগোরিদমটির দুইটি স্টেজ রয়েছেঃ tokenization and tree construction. 
 
 **Actions when the parsing is finished**
 
-The browser begins fetching external resources linked to the page (CSS, images,
-JavaScript files, etc.).
+ব্রাউজার এক্সটার্নাল রিসোর্সগুলো (CSS, images, JavaScript files, etc.) যেগুলো পেজে লিংকড ছিল সেগুলোকে নিয়ে আসা শুরু করে। 
+এই পর্যায়ে ব্রাউজার ইন্টারএক্টিভ ডকুমেন্টটি চিহ্নিত করে এবং স্ক্রিপ্ট parse করে যেগুলো "deferred" mode এ থাকে। সেগুলো ডকুমেন্ট parse সম্পুর্ন হবার পর এক্সিকিউট হয়। ডকুমেন্টের state সেট করা হয় "complete" এবং একটি "load" ইভেন্ট ফায়ার হয়। 
 
-At this stage the browser marks the document as interactive and starts
-parsing scripts that are in "deferred" mode: those that should be
-executed after the document is parsed. The document state is
-set to "complete" and a "load" event is fired.
-
-Note there is never an "Invalid Syntax" error on an HTML page. Browsers fix
-any invalid content and go on.
+নোটঃ HTML পেইজে কখনো "Invalid Syntax" এরর দেখায় না। ব্রাউজার যেকোন ইনভ্যালিড কন্টেন্ট ফিক্স করে এবং এভাবেই চলতে দেয়। 
 
 CSS interpretation
 ------------------
 
-* Parse CSS files, ``<style>`` tag contents, and ``style`` attribute
-  values using `"CSS lexical and syntax grammar"`_
-* Each CSS file is parsed into a ``StyleSheet object``, where each object
-  contains CSS rules with selectors and objects corresponding CSS grammar.
-* A CSS parser can be top-down or bottom-up when a specific parser generator
-  is used.
+* CSS ফাইল, ``<style>`` tag contents, এবং ``style`` attribute values using `"CSS lexical and syntax grammar"`_  parse করে। 
+
+* প্রতিটি CSS ফাইল পার্স করা হয় ``StyleSheet object`` এ, যেখানে প্রতিটি অবজেক্টে CSS রুলস থাকে selectors এবং objects এর সাথে CSS গ্রামার অনুযায়ী। 
+* CSS parser "top-down অথবা bottom-up" হতে পারে, যখন কোন নির্দিষ্ট parser generator ব্যবহার করা হয়। 
 
 Page Rendering
 --------------
 
-* Create a 'Frame Tree' or 'Render Tree' by traversing the DOM nodes, and
-  calculating the CSS style values for each node.
-* Calculate the preferred width of each node in the 'Frame Tree' bottom-up
-  by summing the preferred width of the child nodes and the node's
-  horizontal margins, borders, and padding.
-* Calculate the actual width of each node top-down by allocating each node's
-  available width to its children.
+* DOM নোডে ট্রাভার্সিং করার মাধ্যমে একটি 'Frame Tree' or 'Render Tree' তৈরি করে, এবং প্রতিটি নোডের জন্য CSS style value ক্যালকুলেট করে। 
+* চাইল্ড নোডগুলোর পছন্দ অনুযায়ী width এবং নোডের horizontal margins, borders, and padding এর অনুযায়ী 'Frame Tree' bottom-up -এ থাকা প্রতিটি নোডের প্রেফারড width ক্যালকুলেট করা হয়
+* প্রতিটি নোড তার চাইল্ড নোডে এভেইলেবল width allocate করার মাধ্যেমে প্রতিটি নোডের top-down সঠিক আকারের width ক্যালকুলেট করে। 
+
 * Calculate the height of each node bottom-up by applying text wrapping and
   summing the child node heights and the node's margins, borders, and padding.
 * Calculate the coordinates of each node using the information calculated
   above.
-* More complicated steps are taken when elements are ``floated``,
-  positioned ``absolutely`` or ``relatively``, or other complex features
-  are used. See
-  http://dev.w3.org/csswg/css2/ and http://www.w3.org/Style/CSS/current-work
-  for more details.
-* Create layers to describe which parts of the page can be animated as a group
-  without being re-rasterized. Each frame/render object is assigned to a layer.
-* Textures are allocated for each layer of the page.
-* The frame/render objects for each layer are traversed and drawing commands
-  are executed for their respective layer. This may be rasterized by the CPU
-  or drawn on the GPU directly using D2D/SkiaGL.
-* All of the above steps may reuse calculated values from the last time the
-  webpage was rendered, so that incremental changes require less work.
-* The page layers are sent to the compositing process where they are combined
-  with layers for other visible content like the browser chrome, iframes
-  and addon panels.
-* Final layer positions are computed and the composite commands are issued
-  via Direct3D/OpenGL. The GPU command buffer(s) are flushed to the GPU for
-  asynchronous rendering and the frame is sent to the window server.
+* text wrapping এপ্লাই করে, চাইল্ড নোডের heights এবং নোডের margins, borders, and padding হিসাব করে প্রতিটি নোডের botom-up height ক্যালকুলেট করা হয়। 
+* উপরের সকল হিসেব করা তথ্য কে সমন্বয় করা হয়। 
+* আরও অনেক জটিল স্টেপ নিতে হয় যদি এলিমেন্টগুলো ``floated``,   positioned ``absolutely`` or ``relatively``, অথবা এর থেকে জটিল কোন ফিচার ব্যবহার করা হয়। এখানে দেখুন আরও ভালোভাবে জানার জন্য।  (http://dev.w3.org/csswg/css2/ and http://www.w3.org/Style/CSS/current-work)
+* পেজের যে পার্টগুলো এনিমেটেড হতে পারে সেগুলোকে গ্রুপ করে লেয়ার তৈরি করা হয় কোন re-rasterized করা ছাড়া। প্রতিটি frame/render object একটি লেয়ারে এসাইন করা হয়। 
+* পেজের প্রতি লেয়ারে Textures allocated করা হয়। 
+* প্রতিটি লেয়ারের frame/render objects ট্রাভার্সড হয় এবং তাদের রেস্পেক্টেড লেয়ারের জন্য ড্রয়িং কমান্ডগুলো এক্সিকিউট হয়। এই কাজগুলো CPU দ্বারা rasterized করা হয় কিংবা সরাসরি GPU তে D2D/SkiaGL দ্বারা আঁকা হয়ে থাকে। 
+
+* সর্বশেষ যখন ওয়েবপেজ রেন্ডারড হয়েছে সেখান থেকে ক্যালকুলেটেড তথ্যগুলো পরবর্তীতে রিইউজ করা হতে পারে যাতে পরবর্তী ছোটখাট পরিবর্তনে কম কাজ করা লাগে। 
+* পেজের লেয়ারগুলো  compositing process এ পাঠানো হয় যেখানে তারা অন্যান্য লেয়ারের সাথে যুক্ত হয় অন্যান্য ভিজিবল কন্টেন্টের জন্য যেমন browser chrome, iframes
+  এবং addon panels. 
+* ফাইনাল লেয়ার পজিশন ক্যালকুলেট করে ঠিক করা হয় এবং Direct3D/OpenGL মাধ্যেমে composite commands প্রদান করা হয়। asynchronous rendering এর জন্য GPU কমান্ডগুলোকে বাফার করার মাধ্যেমে GPU এর কাছে পাঠানো হয় এবং উইন্ডো সার্ভারে frame টি পাঠানো হয়।  
+
 
 GPU Rendering
 -------------
 
-* During the rendering process the graphical computing layers can use general
-  purpose ``CPU`` or the graphical processor ``GPU`` as well.
-
-* When using ``GPU`` for graphical rendering computations the graphical
-  software layers split the task into multiple pieces, so it can take advantage
-  of ``GPU`` massive parallelism for float point calculations required for
-  the rendering process.
-
+* rendering process চলাকালীন graphical computing layers জেনারেল পারপাস ``CPU`` কিংবা graphical processor ``GPU`` ব্যবহার করতে পারে। 
+* rendering process এ যখন ``GPU`` ব্যবহার করা হয়  graphical rendering computations এর জন্য, তখন গ্রাফিক্যাল সফটওয়্যার টাস্কটিকে কয়েকটি ভাগে ভাগ করে নিতে পারে, তাতে করে এটি ``GPU`` এর প্যারালালিজমের সুবিধা নিতে পারে। এর একটা কারণ হচ্ছে, float point calculations এর জন্য অনেক সুবিধা হয় তখন। 
 
 Window Server
 -------------
@@ -436,13 +370,8 @@ Window Server
 Post-rendering and user-induced execution
 -----------------------------------------
 
-After rendering has been completed, the browser executes JavaScript code as a result
-of some timing mechanism (such as a Google Doodle animation) or user
-interaction (typing a query into the search box and receiving suggestions).
-Plugins such as Flash or Java may execute as well, although not at this time on
-the Google homepage. Scripts can cause additional network requests to be
-performed, as well as modify the page or its layout, causing another round of
-page rendering and painting.
+rendering process সম্পূর্ণ হবার পরে, ব্রাউজার জাভাস্ক্রীট কোড রান করে কিছু টাইমিং মেকানিজমের জন্য (যেমন Google Doodle animation) অথবা ইউজারের ব্যবহারের উপর ভিত্তি করে (সার্চ বক্সে কোন কুয়েরি টাইপ করা এবং সাজেশন দেখতে পাওয়া ). প্লাগ-ইন যেমন জাভা কিংবা Flash ও রান হতে পারে, যদিও এখন Google হোমপেজে এর প্রয়োজন হবে না। প্রোগ্রামিং স্ক্রিপ্টগুলো হয়তো কোন অতিরিক্ত নেটওয়ার্ক রিকোয়েস্ট পারফর্ম করতে পারে, পেজ বা এর লে-আউট মডিফাই করতে পারে, পেজ আবার rendering এবং পেইন্টিং করতে পারে। 
+
 
 .. _`Creative Commons Zero`: https://creativecommons.org/publicdomain/zero/1.0/
 .. _`"CSS lexical and syntax grammar"`: http://www.w3.org/TR/CSS2/grammar.html
