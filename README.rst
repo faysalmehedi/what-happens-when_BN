@@ -203,111 +203,77 @@ TLS হ্যান্ডশেক
 * "slow-start threshold" এ পৌঁছানোর পর, window সাইজ বাড়তে থাকে প্রতিটি প্যাকেট ``acknowledged`` হলে। আর যদি প্যাকেট ড্রপ হয়ে যায়, window সাইজ ক্রমাগত কমতে থাকে যতক্ষণ না অন্য একটি প্যাকেট ``acknowledged`` হয়। 
 
 
-HTTP protocol
--------------
+HTTP প্রোটোকল 
+------------- 
+যদি গুগলের তৈরি করা কোন ওয়েব ব্রাউজার ব্যবহার করা হয় তবে সেটি পেজ নিয়ে আসার জন্য HTTP রিকোয়েস্ট পাঠানোর পরিবর্তে একটি রিকোয়েস্ট পাঠায় HTTP থেকে "আপগ্রেডেড" SPDY প্রোটোকল ব্যবহার করার জন্য। 
 
-If the web browser used was written by Google, instead of sending an HTTP
-request to retrieve the page, it will send a request to try and negotiate with
-the server an "upgrade" from HTTP to the SPDY protocol.
-
-If the client is using the HTTP protocol and does not support SPDY, it sends a
-request to the server of the form::
+যদি ক্লায়েন্ট HTTP প্রোটোকল ব্যবহার করে এবং SPDY সাপোর্ট না করে থাকে তাহলে এটি নিচের ফরমেটে সার্ভারে রিকোয়েস্ট পাঠায়ঃ   
 
     GET / HTTP/1.1
     Host: google.com
     Connection: close
     [other headers]
 
-where ``[other headers]`` refers to a series of colon-separated key-value pairs
-formatted as per the HTTP specification and separated by single newlines.
-(This assumes the web browser being used doesn't have any bugs violating the
-HTTP spec. This also assumes that the web browser is using ``HTTP/1.1``,
-otherwise it may not include the ``Host`` header in the request and the version
-specified in the ``GET`` request will either be ``HTTP/1.0`` or ``HTTP/0.9``.)
+যেখানে ``[other headers]`` HTTP স্পেসিফিকেশন অনুযায়ী কোলন-সেপারেটেড কি-ভ্যালু পেয়ার দ্বারা ফরমেটেড থাকে  এবং নতুন লাইনে আলাদা আলাদা থাকে। (এটা ধরে নেওয়া হয়, যে ওয়েব ব্রাউজার ব্যবহার করা হয়েছে সেটিতে কোন বাগ নেই যা HTTP স্পেসিফিকেশন কে ভায়োলেট করে। আরও ধরে নেওয়া হয়, ওয়েব ব্রাউজারটি ব্যবহার করছে ``HTTP/1.1``, না হলে এটি হয়তো ``Host`` হেডার রিকোয়েস্টে যুক্ত করতো না এবং ``GET`` রিকোয়েস্টে যে ভার্সন স্পেসিফাই করা হয়েছে সেটি হত ``HTTP/1.0`` অথবা  ``HTTP/0.9``.) 
 
-HTTP/1.1 defines the "close" connection option for the sender to signal that
-the connection will be closed after completion of the response. For example,
+HTTP/1.1 এর মধ্যে থাকা  "close" কানেকশন অপশনটি sender এর জন্য যেটি সিগনাল দেয় যে রেসপন্স সম্পূর্ন হবার পর কানেকশনটি ক্লোজড হয়ে যাবে। যেমনঃ 
 
     Connection: close
 
-HTTP/1.1 applications that do not support persistent connections MUST include
-the "close" connection option in every message.
+HTTP/1.1 এপ্লিকেশনগুলো যারা স্থির(persistent) কানেকশন সাপোর্ট করে না তাদেরকে অবশ্যই "close" কানেকশন অপশন যুক্ত থাকা দরকার প্রতিটি মেসেজে। 
 
-After sending the request and headers, the web browser sends a single blank
-newline to the server indicating that the content of the request is done.
+রিকোয়েস্ট এবং হেডার পাঠানোর পর, ওয়েব ব্রাউজার একটি খালি নতুন লাইন ( a single blank newline) সার্ভারে পাঠায় বুঝানোর জন্য যে রিকোয়েস্টটির কন্টেন্ট পাঠানো শেষ হয়েছে। 
 
-The server responds with a response code denoting the status of the request and
-responds with a response of the form::
+তখন সার্ভার রেসপন্স করে একটি কোড দ্বারা যেটি রিকোয়েস্ট অবস্থা জানায় এবং নিচের ফরমেটের মত করে রেসপন্স করেঃ 
 
     200 OK
     [response headers]
 
-Followed by a single newline, and then sends a payload of the HTML content of
-``www.google.com``. The server may then either close the connection, or if
-headers sent by the client requested it, keep the connection open to be reused
-for further requests.
+একটি নতুন লাইনের পর এটি ``www.google.com` এর HTML কন্টেন্ট payload হিসেবে send করে। এরপর সার্ভার হয় কানেকশনটিকে ক্লোজ করে দেয় অথবা যদি ক্লায়েন্ট যদি হেডারের মাধ্যমে রিকোয়েস্ট করে থাকে তাহলে কানেকশনটি open রাখে অন্য রিকোয়েস্টে ব্যবহার করার জন্য। এটি ক্লায়েন্টের রিকোয়েস্টের উপর নির্ভর করে। 
 
-If the HTTP headers sent by the web browser included sufficient information for
-the webserver to determine if the version of the file cached by the web
-browser has been unmodified since the last retrieval (ie. if the web browser
-included an ``ETag`` header), it may instead respond with a request of
-the form::
+
+এমন যদি হয় ওয়েব ব্রাউজার যে HTTP রিকোয়েস্টটি পাঠিয়েছে ওয়েব সার্ভারের কাছে সেখানে যথেষ্ট পরিমাণ তথ্য রয়েছে যে(ie. if the web browser
+included an ``ETag`` header),  শেষবার যখন রিকোয়েস্ট পাঠিয়েছিল সেটা ওয়েব ব্রাউজারে cached হিসেবে এখনো আছে এবং এই সময়ের মধ্যে ফাইলে কোন পরিবর্তন আর হয় নি তাহলে নিচের ফরম্যাটে রেসপন্স করতে পারেঃ 
 
     304 Not Modified
     [response headers]
 
-and no payload, and the web browser instead retrieve the HTML from its cache.
 
-After parsing the HTML, the web browser (and server) repeats this process
-for every resource (image, CSS, favicon.ico, etc) referenced by the HTML page,
-except instead of ``GET / HTTP/1.1`` the request will be
-``GET /$(URL relative to www.google.com) HTTP/1.1``.
+এবং সেই সাথে কোন payload থাকবে না, এবং ওয়েব ব্রাউজার সার্ভার HTML নিয়ে আসার পরিবর্তে তার নিজস্ব cache থেকে পেজ দেখাবে। 
 
-If the HTML referenced a resource on a different domain than
-``www.google.com``, the web browser goes back to the steps involved in
-resolving the other domain, and follows all steps up to this point for that
-domain. The ``Host`` header in the request will be set to the appropriate
-server name instead of ``google.com``.
+HTML নিয়ে আসার পর ওয়েব ব্রাউজার এবং সার্ভার এই একই প্রসেস বারবার করতে থাকবে প্রতিটি রিসোর্সের (image, CSS, favicon.ico, etc) জন্য যেগুলো HTML পেজে রেফারেন্স করা আছে। শুধুমাত্র এইবার রিকোয়েস্টে ``GET / HTTP/1.1`` এর পরিবর্তে ``GET /$(URL relative to www.google.com) HTTP/1.1`` থাকবে। 
 
-HTTP Server Request Handle
+যদি এমন হয় যে HTML ফাইলটিতে তার নিজস্ব ডোমেইন ``www.google.com`` এর পরিবর্তে অন্য কোন ডোমেইনের রিসোর্সের উল্লেখ থাকে তাহলে ওয়েব ব্রাউজার সেই রিসোর্স নিয়ে আসার জন্য পুনরায় নতুন প্রসেস শুরু করবে ডোমেইন রিসলভ করা থেকে শুরু করে এবং আগে বর্নিত সকল ধাপ অনুসরণ করবে এই পর্যন্ত। তখন রিকোয়েস্টে থাকা ``Host`` হেডারটিতে ``google.com`` এর পরিবর্তে যথাযথ ডোমেইন/সার্ভার নাম সংযুক্ত হবে। 
+
+HTTP সার্ভারের রিকোয়েস্ট হ্যান্ডেল করা 
 --------------------------
-The HTTPD (HTTP Daemon) server is the one handling the requests/responses on
-the server-side. The most common HTTPD servers are Apache or nginx for Linux
-and IIS for Windows.
 
-* The HTTPD (HTTP Daemon) receives the request.
-* The server breaks down the request to the following parameters:
-   * HTTP Request Method (either ``GET``, ``HEAD``, ``POST``, ``PUT``,
-     ``PATCH``, ``DELETE``, ``CONNECT``, ``OPTIONS``, or ``TRACE``). In the
-     case of a URL entered directly into the address bar, this will be ``GET``.
-   * Domain, in this case - google.com.
-   * Requested path/page, in this case - / (as no specific path/page was
-     requested, / is the default path).
-* The server verifies that there is a Virtual Host configured on the server
-  that corresponds with google.com.
-* The server verifies that google.com can accept GET requests.
-* The server verifies that the client is allowed to use this method
-  (by IP, authentication, etc.).
-* If the server has a rewrite module installed (like mod_rewrite for Apache or
-  URL Rewrite for IIS), it tries to match the request against one of the
-  configured rules. If a matching rule is found, the server uses that rule to
-  rewrite the request.
-* The server goes to pull the content that corresponds with the request,
-  in our case it will fall back to the index file, as "/" is the main file
-  (some cases can override this, but this is the most common method).
-* The server parses the file according to the handler. If Google
-  is running on PHP, the server uses PHP to interpret the index file, and
-  streams the output to the client.
+HTTPD (HTTP Daemon) সার্ভার রিকোয়েস্ট এবং রেসপন্স হ্যান্ডেল করে থাকে সার্ভার সাইডে। সবচেয়ে পপুলার এবং ব্যবহার করা HTTPD সার্ভার হচ্ছে Apache, nginx লিনাক্সের জন্য এবং উইন্ডোজের জন্য রয়েছে IIS. 
 
-Behind the scenes of the Browser
+* HTTPD (HTTP Daemon) রিকোয়েস্ট রিসিভ করে। 
+* সার্ভার রিকোয়েস্ট থেকে পাওয়া বিভিন্ন প্যারামিটারকে আলাদা করে নিচের মত করেঃ  
+   * HTTP রিকোয়েস্ট মেথড (either ``GET``, ``HEAD``, ``POST``, ``PUT``,
+     ``PATCH``, ``DELETE``, ``CONNECT``, ``OPTIONS``, or ``TRACE``). 
+   * ডোমেইন, এই ক্ষেত্রে যেমন google.com 
+   * রিকোয়েস্টেড path/page, এই ক্ষেত্রে যেমন - / (যেহেতু নির্দিষ্ট কোন path/page রিকোয়েস্ট করা হয়নি, / হচ্ছে ডিফল্ট) 
+
+
+* সার্ভার তখন নিশ্চিত করে যে সার্ভারে একটি ভার্চুয়াল হোস্ট কনফিগার করা রয়েছে যেটি google.com এর সাথে মিলে যায় 
+* সার্ভার নিশ্চিত করে google.com GET রিকোয়েস্ট accept করতে পারবে 
+* সার্ভার নিশ্চিত করে ক্লায়েন্ট এই মেথডটি ব্যবহার করার জন্য allowed কিনা (by IP, authentication, etc.). 
+* যদি সার্ভারে কোন rewrite module ইন্সটল করা থাকে (যেমন mod_rewrite for Apache or
+  URL Rewrite for IIS), এটি চেষ্টা করে রিকোয়েস্টটিকে কনফিগারড রুলের সাথে ম্যাচ  করানোর। যদি ম্যাচিং করা রুল পাওয়া যায়, তাহলে সার্ভার সেটি ব্যবহার করে রিকোয়েস্টটকে পুনারায় rewrite করে। 
+* সার্ভার এরপর রিকোয়েস্ট অনুযায়ী কন্টেন্ট pull করতে যায়, আমাদের ক্ষেত্রে এটি index ফাইল pull করবে, যেহেতু "/" হচ্ছে মূল ফাইল। (কিছু ক্ষেত্রে এটি ওভাররাইড হতে পারে, কিন্তু এটাই হচ্ছে সবচেয়ে প্রচলিত মেথড) 
+* সার্ভার ফাইল কে পার্স করে handler অনুযায়ী। যদি Google PHP এর উপর চালানো থাকে তবে সার্ভার PHP ব্যবহার index ফাইলকে ইন্টারপ্রিট করার জন্য, এবং আউটপুটকে ক্লায়েন্টের কাছে stream করে থাকে।  
+
+
+ব্রাউজারের বিহাইন্ড দ্যা সিন যা ঘটে 
 ----------------------------------
+সার্ভার যখন রিকোয়েস্টকৃত রিসোর্স(HTML, CSS, JS, images, etc.) ব্রাউজারে পাঠায় তখন সেগুলো নিচের প্রসেসের মধ্যে দিয়ে যায়ঃ 
 
-Once the server supplies the resources (HTML, CSS, JS, images, etc.)
-to the browser it undergoes the below process:
-
-* Parsing - HTML, CSS, JS
+* Parsing - HTML, CSS, JS 
 * Rendering - Construct DOM Tree → Render Tree → Layout of Render Tree →
-  Painting the render tree
+  Painting the render tree 
 
 Browser
 -------
