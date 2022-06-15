@@ -11,6 +11,9 @@ Table of Contents
 .. contents::
    :backlinks: none
    :local:
+   
+.. image:: what-happen-when.jpg
+   :width: 600
 
 যখন গুগলের 'g' কি প্রেস করা হয়
 -------------------------
